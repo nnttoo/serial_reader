@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
+import { OpenLinkAbout } from './openLinkAbout';
 
 
 export type AppAboutProp = {
@@ -11,9 +12,9 @@ const prop = defineProps<AppAboutProp>();
     <div class="frame">
         <div class="ctn">
             
-            <h1>Serial Reader v1</h1>
+            <h1>Serial Reader v2</h1>
             <p>
-                Github link <a href="https://github.com/nnttoo/serial_reader">Github</a>
+                Github link <a href="#" v-on:click="OpenLinkAbout()">Github</a>
             </p>
             
         </div>
