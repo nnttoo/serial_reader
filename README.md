@@ -21,7 +21,7 @@ Serial Reader Windows is an open-source application that allows users to read da
 
 ### Pre-built Release
 
-You can easily use **Serial Reader Windows** without having to build it yourself. Simply download the latest release from the [Release page](./releases). No installation is required; just download the `.exe` file for Windows and run it directly.
+You can easily use **Serial Reader Windows** without having to build it yourself. Simply download the latest release from the [Release page](https://github.com/nnttoo/serial_reader/releases). No installation is required; just download the `.exe` file for Windows and run it directly.
 
 
 ## Usage
