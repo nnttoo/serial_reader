@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "## About",
   "main": "index.js",
-  "scripts": {
-    "WailsRun": "wails dev"
+  "scripts": { 
+    "WailsRun": "wails dev",
+    "WailsBuild": "wails build"
   },
   "author": "",
   "license": "ISC"

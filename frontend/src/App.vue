@@ -113,7 +113,7 @@ onUnmounted(()=>{
   background-color: #283850;
   ;
   margin: auto;
-  min-width: 500px;
+  width: 100%;
   border-collapse: collapse;
 }
 
@@ -150,7 +150,7 @@ onUnmounted(()=>{
   min-height: 30px;
 }
 .mainpage textarea{
-  width: 500px;
+  width: 100%;
   height: 200px;
   margin-top: 20px;
   background-color: black;
