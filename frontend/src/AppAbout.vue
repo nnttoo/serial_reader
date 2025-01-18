@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { OpenLinkAbout } from './openLinkAbout';
+import { onMounted } from 'vue'; 
+import { GetSerialNames, IsConnected, OpenAbout, PortClose, PortOpen } from '../wailsjs/go/main/App';
 
-
+ 
 export type AppAboutProp = {
     aboutClose : ()=>void
 }
@@ -12,9 +12,13 @@ const prop = defineProps<AppAboutProp>();
     <div class="frame">
         <div class="ctn">
             
-            <h1>Serial Reader v2</h1>
+            <h1>Serial Reader v3</h1>
             <p>
-                Github link <a href="#" v-on:click="OpenLinkAbout()">Github</a>
+                Serial Reader Windows is an open-source application that allows users to read data from serial ports on Windows with a more attractive and user-friendly interface. This application simplifies interacting with devices connected via serial ports, such as microcontrollers, sensors, and other hardware.
+            </p>
+            <p>
+                Haryanto <br/>
+                Github link (nnttoo) <a href="#" v-on:click="OpenAbout()">Github</a>
             </p>
             
         </div>

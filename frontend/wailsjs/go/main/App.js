@@ -14,6 +14,10 @@ export function IsConnected() {
   return window['go']['main']['App']['IsConnected']();
 }
 
+export function OpenAbout() {
+  return window['go']['main']['App']['OpenAbout']();
+}
+
 export function PortClose() {
   return window['go']['main']['App']['PortClose']();
 }

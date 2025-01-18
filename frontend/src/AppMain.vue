@@ -198,7 +198,7 @@ onUnmounted(()=>{
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
-
+  
 }
 
 .btnontop{
@@ -208,11 +208,12 @@ onUnmounted(()=>{
   left: 10px;
   width: 30px;
   height: 30px;
-  background-color: #ccc;
+  background-color: #ffffff;
   border: none;
   border-radius: 10px;
+  cursor: pointer; 
 }
 .btnontop:active{
-  transform: scale(0.80);
+  transform: scale(0.80); 
 }
 </style>

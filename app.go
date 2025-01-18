@@ -101,3 +101,7 @@ func (a *App) sendTowebStr(str string) {
 func (a *App) IsConnected() bool {
 	return a.port != nil
 }
+
+func (a *App) OpenAbout() {
+	runtime.BrowserOpenURL(a.ctx, "https://github.com/nnttoo/serial_reader")
+}
