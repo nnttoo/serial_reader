@@ -3,8 +3,7 @@
  
 
 ![screenshot](./Readme_img/screenshot.png)
-
-Here’s the updated `README.md` file that explains how to use the pre-built release or build from source using Wails:
+ 
  
 # Serial Reader Windows
 
