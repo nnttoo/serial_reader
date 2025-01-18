@@ -1,0 +1,11 @@
+{
+  "name": "serial_reader",
+  "version": "1.0.0",
+  "description": "## About",
+  "main": "index.js",
+  "scripts": {
+    "WailsRun": "wails dev"
+  },
+  "author": "",
+  "license": "ISC"
+}
