@@ -80,6 +80,7 @@ func (a *App) PortClose() {
 	}
 
 	a.port.Close()
+	a.port = nil
 }
 func (a *App) sendToweb(buff []byte) {
 	intArray := make([]int, len(buff))
@@ -95,4 +96,8 @@ func (a *App) sendTowebStr(str string) {
 	byteArray := []byte(str)
 	// Emit array of int
 	a.sendToweb(byteArray)
+}
+
+func (a *App) IsConnected() bool {
+	return a.port != nil
 }

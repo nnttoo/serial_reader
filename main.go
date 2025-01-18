@@ -18,8 +18,8 @@ func main() {
 	// Create application with options
 	err := wails.Run(&options.App{
 		Title:  "serial_reader",
-		Width:  600,
-		Height: 500,
+		Width:  400,
+		Height: 600,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

@@ -10,6 +10,10 @@ export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
 }
 
+export function IsConnected() {
+  return window['go']['main']['App']['IsConnected']();
+}
+
 export function PortClose() {
   return window['go']['main']['App']['PortClose']();
 }
