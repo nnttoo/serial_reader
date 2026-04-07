@@ -31,7 +31,11 @@ func (a *App) Greet(name string) string {
 }
 
 func (a *App) GetSerialNames() []string {
-	ports, _ := serial.GetPortsList()
+	ports, err := serial.GetPortsList()
+	if err != nil {
+		a.sendTowebStr("ERROR listing ports: " + err.Error() + "\n")
+		return []string{}
+	}
 
 	return ports
 }
@@ -40,25 +44,28 @@ func (a *App) PortOpen(serialName string, baudRate int, length int) {
 	a.PortClose()
 	mode := &serial.Mode{
 		BaudRate: baudRate,
+		DataBits: 8,
+		Parity:   serial.NoParity,
+		StopBits: serial.OneStopBit,
 	}
 	port, err := serial.Open(serialName, mode)
 	if err != nil {
-		runtime.EventsEmit(a.ctx, "printToweb", "ERROR : "+err.Error())
+		a.sendTowebStr("ERROR opening " + serialName + ": " + err.Error() + "\n")
 		return
 	}
 
 	a.port = port
+	a.sendTowebStr(fmt.Sprintf("Connected to %s @ %d baud\n", serialName, baudRate))
 	buff := make([]byte, length)
 	go func() { // Goroutine untuk membaca port
 		for {
 			n, err := port.Read(buff)
 			if err != nil {
-				a.sendTowebStr((err.Error()))
+				a.sendTowebStr("ERROR reading " + serialName + ": " + err.Error() + "\n")
 				break
 			}
 			if n == 0 {
-				fmt.Println("\nEOF")
-				break
+				continue
 			}
 
 			a.sendToweb(buff[:n])
@@ -79,7 +86,9 @@ func (a *App) PortClose() {
 		return
 	}
 
-	a.port.Close()
+	if err := a.port.Close(); err != nil {
+		a.sendTowebStr("ERROR closing port: " + err.Error() + "\n")
+	}
 	a.port = nil
 }
 func (a *App) sendToweb(buff []byte) {

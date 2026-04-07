@@ -1,19 +1,19 @@
 <script lang="ts" setup>
-import { defineComponent, onMounted, onUnmounted, ref, watch } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { GetSerialNames, IsConnected, PortClose, PortOpen } from '../wailsjs/go/main/App';
-import HelloWorld from './components/HelloWorld.vue' 
 
 export type PropType = {
   openAbout :()=>void
 }
 const prop = defineProps<PropType>();
 
-const listName = ref<string[]>();
-const baudRate = ref<string>();
+const listName = ref<string[]>([]);
+const baudRate = ref<string>("9600");
 const selectedName = ref<string>();
 const isPortsConnected = ref<boolean>(false);
 
 const textTerminal = ref<string>("");
+let stopPrintTowebListener: (() => void) | null = null;
 
 function sleep(n:number){
   return new Promise((r,x)=>{
@@ -35,10 +35,20 @@ onMounted(() => {
   PortClose();
   getSerialList(); 
 
-  (window as any).runtime.EventsOn("printToweb", (data:number[])=>{
-    var textDecoder = new TextDecoder("utf-8");
-    var str = textDecoder.decode(new Uint8Array(data));
-    textTerminal.value += str;
+  stopPrintTowebListener = (window as any).runtime.EventsOn("printToweb", (data:number[] | string)=>{
+    if (Array.isArray(data)) {
+      var textDecoder = new TextDecoder("utf-8");
+      var str = textDecoder.decode(new Uint8Array(data));
+      textTerminal.value += str;
+      return;
+    }
+
+    if (typeof data === "string") {
+      textTerminal.value += data;
+      return;
+    }
+
+    textTerminal.value += String(data);
   });
 
 
@@ -71,6 +81,10 @@ function startConnect(){
 
 onUnmounted(()=>{
   PortClose();
+  if (stopPrintTowebListener) {
+    stopPrintTowebListener();
+    stopPrintTowebListener = null;
+  }
   isStillOpen = false;
 })
 
@@ -92,7 +106,7 @@ onUnmounted(()=>{
           <td>
 
             <select v-model="selectedName">
-              <option v-for="item in listName">{{ item }}</option>
+              <option v-for="item in listName" :key="item" :value="item">{{ item }}</option>
             </select>
           </td>
         </tr>
@@ -110,8 +124,8 @@ onUnmounted(()=>{
           <td></td>
           <td></td>
           <td>
-            <button v-if="!isPortsConnected" :onclick="startConnect">Start Connect</button> 
-            <button class="btnred" v-if="isPortsConnected" :onclick="()=>{ PortClose(); }">Disconnect</button> 
+            <button v-if="!isPortsConnected" @click="startConnect">Start Connect</button> 
+            <button class="btnred" v-if="isPortsConnected" @click="()=>{ PortClose(); }">Disconnect</button> 
           </td>
         </tr>
          
