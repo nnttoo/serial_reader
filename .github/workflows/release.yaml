@@ -2,20 +2,28 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*' # Berjalan setiap kali kamu push tag baru (misal: v1.0.1)
+      - 'v*' # Berjalan setiap kali push tag baru, misal v1.0.0
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # Build untuk Windows dan macOS sekaligus
-        os: [windows-latest, macos-latest]
+        # Build untuk Windows, macOS, dan Linux sekaligus
+        os: [windows-latest, macos-latest, ubuntu-latest]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # --- STEP KHUSUS LINUX ---
+      - name: Install Linux Dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
+
+      # --- SETUP ENVIRONMENT ---
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
@@ -29,13 +37,38 @@ jobs:
       - name: Install Wails
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
+      # --- PROSES BUILD ---
       - name: Build Wails App
-        run: wails build
+        shell: bash
+        run: |
+          # Jalankan build sesuai OS masing-masing
+          wails build
+          
+          # Masuk ke folder hasil build
+          cd build/bin
+          
+          # Beri nama file yang unik berdasarkan OS agar tidak tertukar di GitHub Release
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            mv * "${{ github.event.repository.name }}-windows-x64.exe"
+          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+            # macOS menghasilkan .app (folder), kita zip agar permission-nya aman
+            zip -r "${{ github.event.repository.name }}-mac-universal.zip" *.app
+          else
+            # Linux menghasilkan biner tanpa ekstensi
+            mv * "${{ github.event.repository.name }}-linux-x64"
+          fi
 
+      # --- PUBLISH KE GITHUB RELEASE ---
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v1
         with:
+          # Mengambil file yang sudah diganti namanya atau di-zip tadi
           files: |
-            build/bin/*
+            build/bin/${{ github.event.repository.name }}-windows-x64.exe
+            build/bin/${{ github.event.repository.name }}-mac-universal.zip
+            build/bin/${{ github.event.repository.name }}-linux-x64
+          generate_release_notes: true
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
