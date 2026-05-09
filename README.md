@@ -78,6 +78,7 @@ If you'd like to build the application from source, follow these steps:
 
  
 ## Deploy 
+deploy using github action just push the tags
 
 ```sh
 git push origin v3.0.5
