@@ -9,19 +9,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # Build untuk Windows, macOS, dan Linux sekaligus
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        # Hanya Windows dan macOS
+        os: [windows-latest, macos-latest]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # --- STEP KHUSUS LINUX ---
-      - name: Install Linux Dependencies
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
 
       # --- SETUP ENVIRONMENT ---
       - name: Setup Go
@@ -47,26 +40,23 @@ jobs:
           # Masuk ke folder hasil build
           cd build/bin
           
-          # Beri nama file yang unik berdasarkan OS agar tidak tertukar di GitHub Release
+          # Beri nama file yang unik berdasarkan OS
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            mv * "${{ github.event.repository.name }}-windows-x64.exe"
-          elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-            # macOS menghasilkan .app (folder), kita zip agar permission-nya aman
-            zip -r "${{ github.event.repository.name }}-mac-universal.zip" *.app
+            # Rename file .exe agar rapi
+            mv *.exe "${{ github.event.repository.name }}-windows-x64.exe"
           else
-            # Linux menghasilkan biner tanpa ekstensi
-            mv * "${{ github.event.repository.name }}-linux-x64"
+            # macOS menghasilkan folder .app, kita zip agar tidak rusak strukturnya
+            zip -r "${{ github.event.repository.name }}-mac-universal.zip" *.app
           fi
 
       # --- PUBLISH KE GITHUB RELEASE ---
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v1
         with:
-          # Mengambil file yang sudah diganti namanya atau di-zip tadi
+          # Hanya upload file Windows dan Mac
           files: |
             build/bin/${{ github.event.repository.name }}-windows-x64.exe
             build/bin/${{ github.event.repository.name }}-mac-universal.zip
-            build/bin/${{ github.event.repository.name }}-linux-x64
           generate_release_notes: true
           draft: false
           prerelease: false
