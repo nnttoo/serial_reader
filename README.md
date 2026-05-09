@@ -76,6 +76,13 @@ If you'd like to build the application from source, follow these steps:
 5. **Configure Serial Port**:
    After launching the app, select the desired serial port from the dropdown in the app and click "Connect" to start reading data.
 
+ 
+## Deploy 
+
+```sh
+git push origin v3.0.5
+```
+
 
 ## Contributing
 
