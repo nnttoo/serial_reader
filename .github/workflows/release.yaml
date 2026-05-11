@@ -21,8 +21,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # Tambahkan ubuntu-latest di sini
+        # Logika ini akan memfilter OS berdasarkan input manual kamu
         os: [windows-latest, macos-latest, ubuntu-latest]
+    
+    # Tambahkan baris 'if' ini agar GitHub skip OS yang tidak dipilih
     if: |
       github.event.inputs.build_os == 'all' || 
       github.event.inputs.build_os == matrix.os ||
