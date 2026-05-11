@@ -2,19 +2,26 @@ name: Build and Release
 on:
   push:
     tags:
-      - 'v*' # Berjalan setiap kali push tag baru, misal v1.0.0
+      - 'v*'
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # Hanya Windows dan macOS
-        os: [windows-latest, macos-latest]
+        # Tambahkan ubuntu-latest di sini
+        os: [windows-latest, macos-latest, ubuntu-latest]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      # --- KHUSUS LINUX: Install Dependencies ---
+      - name: Install Linux Dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev build-essential pkg-config
 
       # --- SETUP ENVIRONMENT ---
       - name: Setup Go
@@ -34,18 +41,18 @@ jobs:
       - name: Build Wails App
         shell: bash
         run: |
-          # Jalankan build sesuai OS masing-masing
           wails build
           
-          # Masuk ke folder hasil build
           cd build/bin
           
-          # Beri nama file yang unik berdasarkan OS
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            # Rename file .exe agar rapi
             mv *.exe "${{ github.event.repository.name }}-windows-x64.exe"
+          elif [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            # Untuk Linux, biasanya kita rename binary-nya atau dibungkus .tar.gz
+            # Kita asumsikan output default adalah nama project tanpa extension
+            BINARY_NAME=$(ls | grep -v "\.")
+            mv $BINARY_NAME "${{ github.event.repository.name }}-linux-x64"
           else
-            # macOS menghasilkan folder .app, kita zip agar tidak rusak strukturnya
             zip -r "${{ github.event.repository.name }}-mac-universal.zip" *.app
           fi
 
@@ -53,10 +60,10 @@ jobs:
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v1
         with:
-          # Hanya upload file Windows dan Mac
           files: |
             build/bin/${{ github.event.repository.name }}-windows-x64.exe
             build/bin/${{ github.event.repository.name }}-mac-universal.zip
+            build/bin/${{ github.event.repository.name }}-linux-x64
           generate_release_notes: true
           draft: false
           prerelease: false
