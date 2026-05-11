@@ -20,43 +20,54 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        # Logika ini akan memfilter OS berdasarkan input manual kamu
         os: [windows-latest, macos-latest, ubuntu-latest]
-    
-    # Tambahkan baris 'if' ini agar GitHub skip OS yang tidak dipilih
-    if: |
-      github.event.inputs.build_os == 'all' || 
-      github.event.inputs.build_os == matrix.os ||
-      github.event_name == 'push'
 
     steps:
+      # --- LOGIKA PENGECEKAN INPUT ---
+      - name: Check if should run
+        id: check
+        shell: bash
+        run: |
+          # Berjalan jika: pemicunya adalah push TAG, atau inputnya 'all', atau input cocok dengan OS saat ini
+          if [[ "${{ github.event_name }}" == "push" || "${{ github.event.inputs.build_os }}" == "all" || "${{ github.event.inputs.build_os }}" == "${{ matrix.os }}" ]]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout code
+        if: steps.check.outputs.should_run == 'true'
         uses: actions/checkout@v4
 
       # --- KHUSUS LINUX: Install Dependencies ---
       - name: Install Linux Dependencies
-        if: matrix.os == 'ubuntu-latest'
+        if: steps.check.outputs.should_run == 'true' && matrix.os == 'ubuntu-latest'
         run: |
-          sudo apt-get update 
+          sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev build-essential pkg-config
 
       # --- SETUP ENVIRONMENT ---
       - name: Setup Go
+        if: steps.check.outputs.should_run == 'true'
         uses: actions/setup-go@v4
         with:
           go-version: '1.21'
 
       - name: Setup Node
+        if: steps.check.outputs.should_run == 'true'
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
       - name: Install Wails
+        if: steps.check.outputs.should_run == 'true'
         run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
 
       # --- PROSES BUILD ---
       - name: Build Wails App
+        if: steps.check.outputs.should_run == 'true'
         shell: bash
         run: |
           if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
@@ -68,20 +79,25 @@ jobs:
           cd build/bin
           
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            mv *.exe "${{ github.event.repository.name }}-windows-x64.exe"
+            # Ambil file .exe dan rename
+            EXE_FILE=$(ls *.exe | head -n 1)
+            mv "$EXE_FILE" "${{ github.event.repository.name }}-windows-x64.exe"
           elif [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
-            # Untuk Linux, biasanya kita rename binary-nya atau dibungkus .tar.gz
-            # Kita asumsikan output default adalah nama project tanpa extension
-            BINARY_NAME=$(ls | grep -v "\.")
-            mv $BINARY_NAME "${{ github.event.repository.name }}-linux-x64"
+            # Ambil binary linux (biasanya tidak ada ekstensi)
+            BINARY_NAME=$(ls | grep -v "\." | head -n 1)
+            mv "$BINARY_NAME" "${{ github.event.repository.name }}-linux-x64"
           else
+            # Untuk Mac
             zip -r "${{ github.event.repository.name }}-mac-universal.zip" *.app
           fi
 
       # --- PUBLISH KE GITHUB RELEASE ---
       - name: Upload Release Assets
+        if: steps.check.outputs.should_run == 'true'
         uses: softprops/action-gh-release@v1
         with:
+          # Menggunakan nama tag jika ada, jika tidak pakai 'manual-build'
+          tag_name: ${{ github.ref_name }}
           files: |
             build/bin/${{ github.event.repository.name }}-windows-x64.exe
             build/bin/${{ github.event.repository.name }}-mac-universal.zip
