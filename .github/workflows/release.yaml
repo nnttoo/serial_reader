@@ -71,6 +71,11 @@ jobs:
         shell: bash
         run: |
           if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            # Paksa Wails update dulu agar mengenali tag 4.1 dengan benar
+            go get github.com/wailsapp/wails/v2@latest
+            go mod tidy
+            
+            # Jalankan build dengan tags
             wails build -tags webkit2gtk_41
           else
             wails build
