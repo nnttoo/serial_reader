@@ -4,6 +4,17 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      build_os:
+        description: 'Pilih OS yang mau di-build'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
 
 jobs:
   build:
