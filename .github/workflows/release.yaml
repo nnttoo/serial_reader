@@ -23,6 +23,10 @@ jobs:
       matrix:
         # Tambahkan ubuntu-latest di sini
         os: [windows-latest, macos-latest, ubuntu-latest]
+    if: |
+      github.event.inputs.build_os == 'all' || 
+      github.event.inputs.build_os == matrix.os ||
+      github.event_name == 'push'
 
     steps:
       - name: Checkout code
