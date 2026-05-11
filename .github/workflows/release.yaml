@@ -42,7 +42,11 @@ jobs:
       - name: Build Wails App
         shell: bash
         run: |
-          wails build
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            wails build -tags webkit2gtk_41
+          else
+            wails build
+          fi
           
           cd build/bin
           
